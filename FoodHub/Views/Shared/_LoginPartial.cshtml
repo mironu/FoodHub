@@ -1,0 +1,27 @@
+﻿@using System.Security.Claims
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var userEmail = HttpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+}
+<ul class="navbar-nav">
+    @if (userEmail != null)
+    {
+        <li class="nav-item">
+            <a id="manage" class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Profile" title="Manage">Hello @userEmail ! </a>
+        </li>
+        <li class="nav-item">
+            <form id="logoutForm" class="form-inline" asp-area="" asp-controller="Home" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                <button id="logout" type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="register" asp-area="" asp-controller="Home" asp-action="Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" id="login" asp-area="" asp-controller="Home" asp-action="Login">Login</a>
+        </li>
+    }
+</ul>
