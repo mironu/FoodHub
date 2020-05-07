@@ -11,6 +11,8 @@ using FoodHub.Models;
 using FoodHub.ViewModels;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -123,8 +125,9 @@ namespace FoodHub.Controllers
            var dbRestaurant = _context.Restaurant.FindAsync(model.Id);
                 Restaurant restaurant = RestaurantViewModelToRestaurant(model);
                 restaurant.Password = dbRestaurant.Result.Password;
-                    _context.Restaurant.Update(restaurant);
-                    await _context.SaveChangesAsync();
+                _context.Entry(dbRestaurant.Result).State = EntityState.Detached;
+                _context.Restaurant.Update(restaurant);
+                await _context.SaveChangesAsync();
                 
                 return RedirectToAction(nameof(Index));
             

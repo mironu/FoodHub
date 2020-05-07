@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using FoodHub.Data;
 using FoodHub.Models;
 using FoodHub.ViewModels;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Net.Http.Headers;
 using SixLabors.ImageSharp;
@@ -22,6 +24,7 @@ using SixLabors.ImageSharp.Processing;
 namespace FoodHub.Controllers
 {
     [Authorize]
+    
     public class ProductsController : Controller
     {
         private readonly MyDbContext _context;
@@ -32,7 +35,7 @@ namespace FoodHub.Controllers
         }
 
         // GET: ProductViewModels
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             string id = HttpContext.User.Claims
                     .FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -43,14 +46,16 @@ namespace FoodHub.Controllers
             foreach (var p in products)
             {
                 productViewModels.Add(ProductToProductViewModel(p));
-               
+
             }
-           
+
             return View(productViewModels);
         }
         // GET: ProductViewModels/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            string restaurantId = HttpContext.User.Claims
+                .FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
             if (id == null)
             {
                 return NotFound();
@@ -58,15 +63,18 @@ namespace FoodHub.Controllers
 
             var product = await _context.Product
                 .FirstOrDefaultAsync(m => m.Id == id);
-
             if (product == null)
             {
                 return NotFound();
             }
+            else if (product.RestaurantId == Int32.Parse(restaurantId))
+            {
+                ProductViewModel productViewModel = ProductToProductViewModel(product);
+                return View(productViewModel);
+            }
 
-            ProductViewModel productViewModel = ProductToProductViewModel(product);
-            
-            return View(productViewModel);
+            return Unauthorized();
+
         }
 
         // GET: ProductViewModels/Create
@@ -134,6 +142,7 @@ namespace FoodHub.Controllers
                     {
                         var p = await _context.Product.FindAsync(id);
                         product.Image = p.Image;
+                        _context.Entry(p).State = EntityState.Detached;
                     }
                     _context.Product.Update(product);
                     await _context.SaveChangesAsync();
@@ -183,7 +192,6 @@ namespace FoodHub.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
         public async Task<IActionResult> GetImage(int id)
         {
             var product = await _context.Product.FindAsync(id);

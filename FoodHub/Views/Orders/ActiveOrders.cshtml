@@ -1,0 +1,97 @@
+﻿@model IEnumerable<FoodHub.Models.Order>
+
+@{
+    ViewData["Title"] = "ActiveOrders";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int total = 0;
+    int id = 1;
+}
+
+<h1>ActiveOrders</h1>
+<br>
+<div id="actorders"class="row">
+    @foreach (var item in Model) {
+        <div id="item_@id" class="col-md-4">
+            <div class="card border-primary mb-4">
+                <div class="card-header">Ordered on: @Html.DisplayFor(modelItem => item.OrderPlaced) </div>
+                <div id="card_@id" class="card-body">
+                    <p id="order_@id">Order  @Html.DisplayFor(modelItem => item.State)</p>
+                    <p>Ordered by  @Html.DisplayFor(modelItem => item.User.Name)</p>
+                    <p> @Html.DisplayFor(modelItem => item.User.Email)</p>
+                    <p> @Html.DisplayFor(modelItem => item.User.PhoneNumber)</p>
+
+
+                    <table class="table" style="table-layout: fixed; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>@Html.DisplayNameFor(model => item.ProductOrders.FirstOrDefault().Product.Name)</th>
+                                <th>Count</th>
+                                <th>@Html.DisplayNameFor(model => item.ProductOrders.FirstOrDefault().Price)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var prod in item.ProductOrders)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => prod.Product.Name)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => prod.Quantity)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => prod.Price)
+                                    </td>
+                                </tr>
+                                total += prod.Price;
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th id="total" colspan="2">Total :</th>
+                                <td colspan="2">@total Lei</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    @{ total = 0; }
+                    @if (item.State.Equals("In Progress"))
+                    {
+                        <button onclick="finishOrder(@id,@item.Id)" type="button" class="btn btn-info">Finish Order</button>
+
+                    }
+                    else
+                    {
+                        <button id="accept_@id" onclick="orderAccepted(@id,@item.Id)" type="button" class="btn btn-success">Accept</button>
+                        <button id="decline_@id" onclick="orderDenied(@id,@item.Id)" type="button" class="btn btn-danger">Decline</button>
+                    }
+
+
+                </div>
+            </div>
+        </div>
+        id++;
+    }
+</div>
+
+<div id="myModal" class="modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure you want to decline this order ?</h5>
+                <button onclick="cancelClicked()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <p>Reason</p>
+            <div class="modal-body">
+                <textarea id ="reason" class="form-control" id="exampleTextarea" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button onclick="denyOrder()" type="button" class="btn btn-primary">Save changes</button>
+                <button onclick="cancelClicked()" type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+

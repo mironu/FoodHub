@@ -1,0 +1,107 @@
+﻿@model FoodHub.Models.Order
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int total = 0;
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Order</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.OrderPlaced)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.OrderPlaced)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.State)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.State)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Type)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Type)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.User)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.User.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.User.Email)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.User.Email)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.User.PhoneNumber)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.User.PhoneNumber)
+        </dd>
+    </dl>
+    
+    <button type="button" class="btn btn-primary btn-sm"  data-toggle="collapse" href="#collapse1">Show products </button>
+    <div id ="collapse1"  class="panel-collapse collapse">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProductOrders.FirstOrDefault().Product.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProductOrders.FirstOrDefault().Product.Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProductOrders.FirstOrDefault().Price)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProductOrders.FirstOrDefault().Quantity)
+                </th>
+                <th></th>
+            </tr>
+            </thead>
+    
+            <tbody>
+            @foreach (var item in Model.ProductOrders)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Product.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Product.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Price)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </td>
+                </tr>
+                total += item.Price;
+            }
+            </tbody>
+            <tfoot>
+            <tr>
+                <th id="total" colspan="2">Total :</th>
+                <td colspan="2">@total Lei</td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<br>
+<div> 
+    <a asp-action="Index">Back to List</a>
+</div>
+
