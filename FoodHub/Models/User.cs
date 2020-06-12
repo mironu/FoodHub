@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -18,6 +19,10 @@ namespace FoodHub.Models
         public string Name { get; set; }
         [Required]
         public string Password { get; set; }
+        public string Salt { get; set; }
+
+        [JsonIgnore]
+        public string StripeId { get; set; }
         public ICollection<Order> Orders { get; set; }
     }
 }

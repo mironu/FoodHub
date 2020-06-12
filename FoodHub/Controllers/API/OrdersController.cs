@@ -40,6 +40,7 @@ namespace FoodHub.Controllers.API
             {
                 OrderPlaced = DateTime.Now,
                 RestaurantId = Int32.Parse(data["RestaurantId"].ToString()),
+                Payment = data["Payment"].ToString(),
                 State = "Initiated",
                 Type = data["Type"].ToString(),
                 UserId = user.Id
@@ -47,10 +48,11 @@ namespace FoodHub.Controllers.API
             _context.Order.Add(receivedOrder);
             _context.SaveChanges();
 
-            var x = JsonConvert.DeserializeObject<List<ProductOrder>>(data["ProductOrders"].ToString());
-            x.ForEach(p => p.OrderId = receivedOrder.Id);
-            _context.ProductOrder.AddRange(x);
+            var products = JsonConvert.DeserializeObject<List<ProductOrder>>(data["ProductOrders"].ToString());
+            products.ForEach(p => p.OrderId = receivedOrder.Id);
+            _context.ProductOrder.AddRange(products);
             _context.SaveChanges();
+
             var order = _context.Order
                .Include(u => u.User)
                .Include(o => o.ProductOrders)
@@ -67,26 +69,92 @@ namespace FoodHub.Controllers.API
                    u.OrderPlaced,
                    u.State,
                    u.Type,
+                   u.Payment,
+                   u.Id,
                })
                .FirstOrDefault();
-            // .FirstOrDefaultAsync(m => m.Id == receivedOrder.Id);
-            // _hub.Clients.User(receivedOrder.RestaurantId.ToString()).
-            _hub.Clients.User(receivedOrder.RestaurantId.ToString())
-                .SendAsync("ReceiveMessage", JsonConvert.SerializeObject(order, Formatting.None,
+
+           
+             _hub.Clients.User(receivedOrder.RestaurantId.ToString())
+                .SendAsync("ReceiveMessage",
+                JsonConvert.SerializeObject(order, Formatting.None,
                         new JsonSerializerSettings()
                         {
                             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                         }));
-            return Ok();
+                
+     
+            return Ok("success");
         }
 
 
         [HttpGet]
+        public async Task<ActionResult<IEnumerable>> GetOrders()
+        {
+
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var email = identity.Claims.FirstOrDefault().Value;
+            var user = await _context.User.AsNoTracking().Where(u => u.Email.Equals(email)).FirstOrDefaultAsync();
+            var orders = await _context.Order
+                .Include(o => o.ProductOrders)
+                .Where(o => o.UserId == user.Id)
+                .Select(o => new
+                {
+                    o.Id,
+                    o.OrderPlaced,
+                    o.State,
+                    o.Type,
+                    o.Payment,
+                    o.Restaurant.Name,
+                    ProductOrders = o.ProductOrders.Select(p => new
+                    {
+                        p.Price,
+                        p.Quantity,
+                        p.Product.Name
+                    })
+                })
+                .ToListAsync();
+            string response = JsonConvert.SerializeObject(orders, Formatting.None,
+                        new JsonSerializerSettings()
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                        });
+            return response;
+
+        }
+
+        [HttpGet("{id}")]
         public async Task<ActionResult<IEnumerable>> GetOrder(int id)
         {
-            var orders = await _context.Order.Where(o => o.UserId == id).ToListAsync();
 
-            return orders;
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var email = identity.Claims.FirstOrDefault().Value;
+            var user = await _context.User.AsNoTracking().Where(u => u.Email.Equals(email)).FirstOrDefaultAsync();
+            var orders = await _context.Order
+                .Include(o => o.ProductOrders)
+                .Where(o => o.Id == id)
+                .Select(o => new
+                {
+                    o.Id,
+                    o.OrderPlaced,
+                    o.State,
+                    o.Type,
+                    o.Payment,
+                    o.Restaurant.Name,
+                    ProductOrders = o.ProductOrders.Select(p => new
+                    {
+                        p.Price,
+                        p.Quantity,
+                        p.Product.Name
+                    })
+                }).FirstOrDefaultAsync();
+
+            string response = JsonConvert.SerializeObject(orders, Formatting.None,
+                        new JsonSerializerSettings()
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                        });
+            return response;
 
         }
     }

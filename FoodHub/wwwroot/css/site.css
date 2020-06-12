@@ -106,3 +106,14 @@ body {
 .card-product .price-old {
     color: #999;
 }
+
+.bg {
+    /* The image used */
+    background-image: url("https://images.pexels.com/photos/1565982/pexels-photo-1565982.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940");
+    /* Full height */
+    height: -webkit-fill-available;
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}

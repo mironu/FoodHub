@@ -12,6 +12,7 @@ namespace FoodHub.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public int Price { get; set; }
+        [Newtonsoft.Json.JsonIgnore]
         public byte[] Image { get; set; }
         public virtual Restaurant Restaurant { get; set; }
         public ICollection<ProductOrder> ProductOrders { get; set; }

@@ -10,6 +10,7 @@ var cardId = 0;
 var orderId = 0;
 function orderAccepted(id,ordId) {
     var order = document.getElementById("order_" + id);
+    var email = document.getElementById("email_" + id).children[0].innerHTML;
     order.innerHTML = "Order In Progress";
     document.getElementById("accept_" + id).style.display = "none";
     document.getElementById("decline_" + id).style.display = "none";
@@ -22,7 +23,7 @@ function orderAccepted(id,ordId) {
     card.appendChild(btn);
 
     //update state
-    doPost({ "state": "In Progress", "orderId": ordId });
+    doPost({ "state": "In Progress", "orderId": ordId, "email": email});
  
 }
 
@@ -52,20 +53,21 @@ function cancelClicked() {
 
 function denyOrder() {
     var item = document.getElementById("item_" + cardId);
+    var email = document.getElementById("email_" + cardId).children[0].innerHTML;
     item.style.display = "none";
     cancelClicked();
     var reason = document.getElementById("reason").innerHTML;
     //update state + send message
-    doPost({ "state": "Declined", "orderId": orderId , "reason": reason });
+    doPost({ "state": "Declined", "orderId": orderId, "reason": reason, "email": email });
 }
 
 
 function finishOrder(id, ordId) {
     var item = document.getElementById("item_" + id);
     item.style.display = "none";
-
+    var email = document.getElementById("email_" + id).children[0].innerHTML;
     //update state
-    doPost({ "state": "Finished", "orderId": ordId });
+    doPost({ "state": "Finished", "orderId": ordId, "email":email });
 }
 
 
@@ -76,9 +78,15 @@ var connection = new signalR.HubConnectionBuilder().withUrl("/orderHub").build()
 connection.on("ReceiveMessage", function (obj) {
     obj = JSON.parse(obj);
     console.log(obj);
+    var no_ords = document.getElementById("no_orders");
+    if (no_ords != null)
+        no_ords.style.display = "none";
     var row = document.getElementById("actorders");
     var count = row.childElementCount; count++;
-    var total = obj.ProductPrice.reduce((a, b) => a + b);
+    var total = 0;
+    for (var i = 0; i < obj.ProductPrice.length; i++) {
+        total += obj.ProductPrice[i] * obj.ProductQuantity[i];
+    }
     var card = document.createElement("div");
     card.setAttribute("id", "item_" + count);
     card.setAttribute("class", "col-md-4");
@@ -100,8 +108,9 @@ connection.on("ReceiveMessage", function (obj) {
             <div id="card_${count}" class="card-body">
                 <p id="order_${count}">Order ${obj.State}</p>
                 <p>Ordered by  ${obj.Name}</p>
-                <p> <a href ="mailto:${obj.Email}">${obj.Email}</a></p>
+                <p id="email_${count}"> <a href ="mailto:${obj.Email}">${obj.Email}</a></p>
                 <p> ${obj.PhoneNumber}</p>
+                <p>Payment method ${obj.Payment}</p>
                  <table class="table" style="table-layout: fixed; width: 100%;">
                         <thead>
                         <tr>
@@ -120,8 +129,8 @@ connection.on("ReceiveMessage", function (obj) {
                         </tr>
                         </tfoot>
                     </table>
-                    <button id="accept_${count}" onclick="orderAccepted(${count})" type="button" class="btn btn-success">Accept</button>
-                    <button id="decline_${count}" onclick="orderDenied(${count})" type="button" class="btn btn-danger">Decline</button>
+                    <button id="accept_${count}" onclick="orderAccepted(${count},${obj.Id})" type="button" class="btn btn-success">Accept</button>
+                    <button id="decline_${count}" onclick="orderDenied(${count},${obj.Id})" type="button" class="btn btn-danger">Decline</button>
                     </div>`
     }
     catch (error) {
@@ -134,6 +143,17 @@ connection.on("ReceiveMessage", function (obj) {
 
 });
 
-connection.start();
-console.log(connection);
+async function start() {
+    try {
+        await connection.start();
+        console.log("connected");
+    } catch (err) {
+        console.log(err);
+        setTimeout(() => start(), 5000);
+    }
+};
+connection.onclose(async () => {
+    await start();
+});
 
+start();

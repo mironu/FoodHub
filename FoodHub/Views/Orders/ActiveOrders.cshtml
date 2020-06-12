@@ -9,6 +9,10 @@
 
 <h1>ActiveOrders</h1>
 <br>
+@{if (Model.Count() == 0){
+       <h3 id="no_orders">No orders yet.</h3>
+    }
+}
 <div id="actorders"class="row">
     @foreach (var item in Model) {
         <div id="item_@id" class="col-md-4">
@@ -17,9 +21,9 @@
                 <div id="card_@id" class="card-body">
                     <p id="order_@id">Order  @Html.DisplayFor(modelItem => item.State)</p>
                     <p>Ordered by  @Html.DisplayFor(modelItem => item.User.Name)</p>
-                    <p> @Html.DisplayFor(modelItem => item.User.Email)</p>
+                    <p id="email_@id"> @Html.DisplayFor(modelItem => item.User.Email)</p>
                     <p> @Html.DisplayFor(modelItem => item.User.PhoneNumber)</p>
-
+                    <p>Payment method @Html.DisplayFor(modelItem => item.Payment)</p>
 
                     <table class="table" style="table-layout: fixed; width: 100%;">
                         <thead>
@@ -44,7 +48,7 @@
                                         @Html.DisplayFor(modelItem => prod.Price)
                                     </td>
                                 </tr>
-                                total += prod.Price;
+                                total += prod.Price * prod.Quantity;
                             }
                         </tbody>
                         <tfoot>

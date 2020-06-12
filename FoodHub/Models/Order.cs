@@ -11,6 +11,7 @@ namespace FoodHub.Models
         public DateTime OrderPlaced { get; set; }
         public string State { get; set; }
         public string Type { get; set; }
+        public string Payment { get; set; }
         public int UserId { get; set; }
         public int RestaurantId { get; set; }
         public User User { get; set; }

@@ -33,7 +33,7 @@ namespace FoodHub
         {
             services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddDbContext<MyDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("MyDbContext")));
+                     options.UseSqlServer(Configuration.GetConnectionString("MyDbContext")));
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
@@ -80,7 +80,9 @@ namespace FoodHub
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapHub<OrderHub>("/orderHub");
+
+                endpoints.MapHub<OrderHub>("/orderHub"); 
+                endpoints.MapHub<AndroidHub>("/AndroidHub");
             });
         }
     }

@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using FoodHub.Data;
-using FoodHub.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.Net.Http.Headers;
 
 namespace FoodHub.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+   
     public class ProductsController : ControllerBase
     {
         private readonly MyDbContext _context;
@@ -24,18 +17,14 @@ namespace FoodHub.Controllers.API
             _context = context;
         }
 
-        // GET: api/Products/5
+
         [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProduct(int id)
+        public async Task<IActionResult> GetProductImage(int id)
         {
-            var product = await _context.Product.Where(p => p.RestaurantId == id).ToListAsync();
-
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return product;
+            var product = await _context.Product.FindAsync(id);
+            if (product != null && product.Image != null)
+                return new FileContentResult(product.Image, new MediaTypeHeaderValue("image/jpeg"));
+            return NotFound();
         }
 
     }

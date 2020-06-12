@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FoodHub.Data;
-using FoodHub.Models;
-using FoodHub.ViewModels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json;
 
 namespace FoodHub.Controllers.API
 {
@@ -28,44 +23,38 @@ namespace FoodHub.Controllers.API
 
         // GET: api/Restaurants
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RestaurantApiModel>>> GetRestaurant()
+        public async Task<ActionResult<IEnumerable>> GetRestaurants()
         {
-            var restaurant = await _context.Restaurant.ToListAsync();
-            List<RestaurantApiModel> lst = new List<RestaurantApiModel>();
-            foreach (var r in restaurant)
-            {
-                lst.Add(new RestaurantApiModel()
-                {
-                    Address = r.Address,
-                    Email = r.Email,
-                    Id = r.Id,
-                    Name = r.Name,
-                    PhoneNumber = r.PhoneNumber
-                });
-            }
+            var restaurant = await _context.Restaurant
+                .Include(r => r.Products)
+                .ToListAsync();
 
-            return lst;
+            var response = JsonConvert.SerializeObject(restaurant, Formatting.None,
+                        new JsonSerializerSettings()
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                        });
+            return response;
         }
 
         // GET: api/Restaurants/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<RestaurantApiModel>> GetRestaurant(int id)
+        public async Task<ActionResult<string>> GetRestaurant(int id)
         {
-            var restaurant = await _context.Restaurant.FindAsync(id);
+            var restaurant = await _context.Restaurant.Include(r => r.Products)
+                            .FirstOrDefaultAsync(r => r.Id == id);
 
             if (restaurant == null)
             {
                 return NotFound();
             }
 
-            return new RestaurantApiModel()
-            {
-                Address = restaurant.Address,
-                Email = restaurant.Email,
-                Id = restaurant.Id,
-                Name = restaurant.Name,
-                PhoneNumber = restaurant.PhoneNumber
-            };
+            var response = JsonConvert.SerializeObject(restaurant, Formatting.None,
+                        new JsonSerializerSettings()
+                        {
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                        });
+            return response;
         }
 
     }

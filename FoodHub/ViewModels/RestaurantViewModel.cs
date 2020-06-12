@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FoodHub.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -42,7 +43,32 @@ namespace FoodHub.ViewModels
         public string Address { get; set; }
 
         public string InfoMessage { get; set; }
-        
+
+        public static implicit operator Restaurant(RestaurantViewModel vm)
+        {
+            return new Restaurant
+            {
+                Name = vm.Name,
+                Address = vm.Address,
+                Email = vm.Email,
+                Id = vm.Id,
+                Password = vm.Password,
+                PhoneNumber = vm.PhoneNumber,
+            };
+        }
+
+        public static implicit operator RestaurantViewModel(Restaurant restaurant)
+        {
+            return new RestaurantViewModel
+            {
+                Name = restaurant.Name,
+                Address = restaurant.Address,
+                Email = restaurant.Email,
+                Id = restaurant.Id,
+                Password = restaurant.Password,
+                PhoneNumber = restaurant.PhoneNumber,
+            };
+        }
 
     }
 }

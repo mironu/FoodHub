@@ -8,6 +8,8 @@ namespace FoodHub.Hubs
         public async Task SendMessage(object[] args)
         {
             await Clients.All.SendAsync("ReceiveMessage", "a", "b");
-        }
+          
+        }       
+
     }
 }
